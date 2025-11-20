@@ -1,0 +1,41 @@
+# Remove all existing rules first
+-D
+
+# Buffer Size (Increase to prevent failure under load)
+-b 8192
+
+# FAILURE MODE (2=Shutdown, 1=Log, 0=Ignore)
+# In CCDC, set to 0 or 1. NEVER set to 2 or you will crash your own box if logs fill up.
+-f 1
+
+# --- WATCH CRITICAL USER FILES ---
+# Catches user creation, password changes, or group edits
+-w /etc/passwd -p wa -k identity_theft
+-w /etc/group -p wa -k identity_theft
+-w /etc/shadow -p wa -k identity_theft
+-w /etc/sudoers -p wa -k sudo_changes
+-w /etc/sudoers.d/ -p wa -k sudo_changes
+
+# --- WATCH NETWORK CONFIGURATION ---
+# Catches Red Team changing IP or DNS
+-w /etc/hosts -p wa -k network_mod
+-w /etc/network/ -p wa -k network_mod
+-w /etc/resolv.conf -p wa -k network_mod
+
+# --- WATCH SUSPICIOUS TOOLS ---
+# If anyone runs these, you want to know immediately
+-w /bin/nc -p x -k suspicious_tool
+-w /bin/netcat -p x -k suspicious_tool
+-w /usr/bin/ncat -p x -k suspicious_tool
+-w /usr/bin/python3 -p x -k script_execution
+-w /usr/bin/wget -p x -k download_tool
+-w /usr/bin/curl -p x -k download_tool
+
+# --- WATCH TEMPORARY FOLDERS ---
+# Red Team loves dropping malware in /tmp
+-w /tmp/ -p x -k tmp_execution
+
+# --- OPTIONAL: LOG ALL COMMANDS (High Noise) ---
+# Only enable this if you are desperate. It logs EVERY command run by root.
+# -a always,exit -F arch=b64 -F euid=0 -S execve -k root_cmd
+# -a always,exit -F arch=b32 -F euid=0 -S execve -k root_cmd
